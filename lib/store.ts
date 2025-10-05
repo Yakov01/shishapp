@@ -81,7 +81,7 @@ export const useTableStore = create<TableState>((set, get) => ({
     if (!table || table.session.status !== 'available') return
 
     const now = new Date()
-    const endTime = new Date(now.getTime() + 20 * 60 * 1000) // 20 minutes
+    const endTime = new Date(now.getTime() + 30 * 60 * 1000) // 30 minutes
 
     const updatedTable: Table = {
       ...table,
@@ -111,8 +111,8 @@ export const useTableStore = create<TableState>((set, get) => ({
     const now = new Date()
     const currentChange = table.session.current_change
 
-    if (currentChange >= 3) {
-      // Reset to available after 3rd change
+    if (currentChange >= 2) {
+      // Reset to available after 2nd change
       const updatedTable: Table = {
         ...table,
         session: {
@@ -133,7 +133,7 @@ export const useTableStore = create<TableState>((set, get) => ({
       }
     } else {
       // Start new timer for next change
-      const endTime = new Date(now.getTime() + 20 * 60 * 1000)
+      const endTime = new Date(now.getTime() + 30 * 60 * 1000)
 
       const updatedTable: Table = {
         ...table,

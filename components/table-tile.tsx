@@ -95,7 +95,7 @@ export function TableTile({ table, onTap }: TableTileProps) {
         {/* Session Counter */}
         {table.session.current_change > 0 && table.session.status !== 'available' && (
           <Badge variant="secondary" className="text-xs">
-            {table.session.current_change}/3
+            {table.session.current_change}/2
           </Badge>
         )}
 
