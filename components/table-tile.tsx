@@ -9,31 +9,16 @@ import { useEffect, useState } from 'react'
 interface TableTileProps {
   table: Table
   onTap: () => void
-  onDragStart?: () => void
-  onDragEnd?: () => void
-  onDragOver?: (e: React.DragEvent) => void
-  onDrop?: () => void
-  onTouchStart?: () => void
-  onTouchMove?: () => void
-  onTouchEnd?: () => void
-  isDragging?: boolean
-  isDragOver?: boolean
+  onDoubleTap: () => void
 }
 
 export function TableTile({
   table,
   onTap,
-  onDragStart,
-  onDragEnd,
-  onDragOver,
-  onDrop,
-  onTouchStart,
-  onTouchMove,
-  onTouchEnd,
-  isDragging,
-  isDragOver
+  onDoubleTap
 }: TableTileProps) {
   const [timeRemaining, setTimeRemaining] = useState<number>(0)
+  const [lastTapTime, setLastTapTime] = useState<number>(0)
 
   useEffect(() => {
     if (table.session.status === 'active' && table.session.timer_end_time) {
@@ -74,12 +59,24 @@ export function TableTile({
     return table.session.status === 'available' || table.session.status === 'alert'
   }
 
-  const canDrag = (): boolean => {
-    return table.session.status === 'active' || table.session.status === 'alert'
-  }
+  const handleClick = () => {
+    const now = Date.now()
+    const timeSinceLastTap = now - lastTapTime
 
-  const canReceiveDrop = (): boolean => {
-    return table.session.status === 'available'
+    // Double tap detection (300ms threshold)
+    if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
+      // Double tap detected
+      if (table.session.status === 'active' || table.session.status === 'alert') {
+        onDoubleTap()
+      }
+      setLastTapTime(0) // Reset
+    } else {
+      // Single tap
+      setLastTapTime(now)
+      if (canInteract()) {
+        onTap()
+      }
+    }
   }
 
   return (
@@ -90,9 +87,8 @@ export function TableTile({
         transition-all
         duration-200
         border-2
-        ${isDragOver ? 'border-blue-500 border-4' : 'border-gray-700'}
+        border-gray-700
         ${canInteract() ? 'hover:scale-105' : 'cursor-default'}
-        ${isDragging ? 'opacity-50' : 'opacity-100'}
         flex
         flex-col
         items-center
@@ -100,49 +96,7 @@ export function TableTile({
         p-2
         h-[100px]
       `}
-      draggable={canDrag()}
-      onDragStart={(e) => {
-        if (canDrag() && onDragStart) {
-          e.dataTransfer.effectAllowed = 'move'
-          onDragStart()
-        }
-      }}
-      onDragEnd={() => {
-        if (onDragEnd) onDragEnd()
-      }}
-      onDragOver={(e) => {
-        if (canReceiveDrop() && onDragOver) {
-          e.preventDefault()
-          e.dataTransfer.dropEffect = 'move'
-          onDragOver(e)
-        }
-      }}
-      onDragLeave={() => {
-        // Handle via parent component
-      }}
-      onDrop={(e) => {
-        if (canReceiveDrop() && onDrop) {
-          e.preventDefault()
-          onDrop()
-        }
-      }}
-      onTouchStart={(e) => {
-        if (canDrag() && onTouchStart) {
-          onTouchStart()
-        }
-      }}
-      onTouchMove={(e) => {
-        if (onTouchMove) {
-          e.preventDefault()
-          onTouchMove()
-        }
-      }}
-      onTouchEnd={(e) => {
-        if (onTouchEnd) {
-          onTouchEnd()
-        }
-      }}
-      onClick={() => canInteract() && onTap()}
+      onClick={handleClick}
     >
       <div className="text-white text-center space-y-1 w-full">
         {/* Table Number */}

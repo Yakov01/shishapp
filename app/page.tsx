@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useTableStore } from '@/lib/store'
 import { TableTile } from '@/components/table-tile'
 import { Button } from '@/components/ui/button'
@@ -16,13 +16,8 @@ export default function Home() {
     handleCharcoalChange,
     updateTimers,
     setSoundEnabled,
-    transferTable
+    resetTable
   } = useTableStore()
-
-  const [draggedTableNumber, setDraggedTableNumber] = useState<number | null>(null)
-  const [dragOverTableNumber, setDragOverTableNumber] = useState<number | null>(null)
-  const [touchStartTable, setTouchStartTable] = useState<number | null>(null)
-  const [touchCurrentTable, setTouchCurrentTable] = useState<number | null>(null)
 
   useEffect(() => {
     initTables()
@@ -46,53 +41,8 @@ export default function Home() {
     }
   }
 
-  const handleDragStart = (tableNumber: number) => {
-    setDraggedTableNumber(tableNumber)
-  }
-
-  const handleDragEnd = () => {
-    setDraggedTableNumber(null)
-    setDragOverTableNumber(null)
-  }
-
-  const handleDragOver = (tableNumber: number) => {
-    setDragOverTableNumber(tableNumber)
-  }
-
-  const handleDrop = (tableNumber: number) => {
-    if (draggedTableNumber !== null && draggedTableNumber !== tableNumber) {
-      transferTable(draggedTableNumber, tableNumber)
-    }
-    setDraggedTableNumber(null)
-    setDragOverTableNumber(null)
-  }
-
-  const handleTouchStart = (tableNumber: number) => {
-    const table = tables.get(tableNumber)
-    if (table && (table.session.status === 'active' || table.session.status === 'alert')) {
-      setTouchStartTable(tableNumber)
-      setDraggedTableNumber(tableNumber)
-    }
-  }
-
-  const handleTouchMove = (tableNumber: number) => {
-    if (touchStartTable !== null) {
-      setTouchCurrentTable(tableNumber)
-      setDragOverTableNumber(tableNumber)
-    }
-  }
-
-  const handleTouchEnd = (tableNumber: number) => {
-    if (touchStartTable !== null && touchStartTable !== tableNumber) {
-      const toTable = tables.get(tableNumber)
-      if (toTable && toTable.session.status === 'available') {
-        transferTable(touchStartTable, tableNumber)
-      }
-    }
-    setTouchStartTable(null)
-    setTouchCurrentTable(null)
-    setDraggedTableNumber(null)
-    setDragOverTableNumber(null)
+  const handleTableDoubleTap = (tableNumber: number) => {
+    resetTable(tableNumber)
   }
 
   if (loading) {
@@ -135,15 +85,7 @@ export default function Home() {
             key={table.id}
             table={table}
             onTap={() => handleTableTap(table.table_number)}
-            onDragStart={() => handleDragStart(table.table_number)}
-            onDragEnd={handleDragEnd}
-            onDragOver={() => handleDragOver(table.table_number)}
-            onDrop={() => handleDrop(table.table_number)}
-            onTouchStart={() => handleTouchStart(table.table_number)}
-            onTouchMove={() => handleTouchMove(table.table_number)}
-            onTouchEnd={() => handleTouchEnd(table.table_number)}
-            isDragging={draggedTableNumber === table.table_number}
-            isDragOver={dragOverTableNumber === table.table_number}
+            onDoubleTap={() => handleTableDoubleTap(table.table_number)}
           />
         ))}
       </div>

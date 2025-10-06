@@ -26,7 +26,7 @@ interface TableState {
   updateTimers: () => void
   setSoundEnabled: (enabled: boolean) => void
   playAlert: () => void
-  transferTable: (fromTableNumber: number, toTableNumber: number) => void
+  resetTable: (tableNumber: number) => void
 }
 
 // Helper to initialize 25 tables
@@ -226,29 +226,18 @@ export const useTableStore = create<TableState>((set, get) => ({
     }
   },
 
-  transferTable: (fromTableNumber: number, toTableNumber: number) => {
+  resetTable: (tableNumber: number) => {
     const tables = get().tables
-    const fromTable = tables.get(fromTableNumber)
-    const toTable = tables.get(toTableNumber)
+    const table = tables.get(tableNumber)
 
-    // Validate: fromTable must have an active session, toTable must be available
-    if (!fromTable || !toTable) return
-    if (fromTable.session.status === 'available') return
-    if (toTable.session.status !== 'available') return
+    // Only reset active or alert tables
+    if (!table || table.session.status === 'available') return
 
     const newTables = new Map(tables)
 
-    // Transfer session from fromTable to toTable
-    const updatedToTable: Table = {
-      ...toTable,
-      session: {
-        ...fromTable.session
-      }
-    }
-
-    // Reset fromTable to available
-    const updatedFromTable: Table = {
-      ...fromTable,
+    // Reset table to available
+    const updatedTable: Table = {
+      ...table,
       session: {
         status: 'available',
         current_change: 0,
@@ -257,8 +246,7 @@ export const useTableStore = create<TableState>((set, get) => ({
       }
     }
 
-    newTables.set(toTableNumber, updatedToTable)
-    newTables.set(fromTableNumber, updatedFromTable)
+    newTables.set(tableNumber, updatedTable)
     set({ tables: newTables })
 
     // Save to localStorage
