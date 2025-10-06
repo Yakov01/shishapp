@@ -21,6 +21,8 @@ export default function Home() {
 
   const [draggedTableNumber, setDraggedTableNumber] = useState<number | null>(null)
   const [dragOverTableNumber, setDragOverTableNumber] = useState<number | null>(null)
+  const [touchStartTable, setTouchStartTable] = useState<number | null>(null)
+  const [touchCurrentTable, setTouchCurrentTable] = useState<number | null>(null)
 
   useEffect(() => {
     initTables()
@@ -61,6 +63,34 @@ export default function Home() {
     if (draggedTableNumber !== null && draggedTableNumber !== tableNumber) {
       transferTable(draggedTableNumber, tableNumber)
     }
+    setDraggedTableNumber(null)
+    setDragOverTableNumber(null)
+  }
+
+  const handleTouchStart = (tableNumber: number) => {
+    const table = tables.get(tableNumber)
+    if (table && (table.session.status === 'active' || table.session.status === 'alert')) {
+      setTouchStartTable(tableNumber)
+      setDraggedTableNumber(tableNumber)
+    }
+  }
+
+  const handleTouchMove = (tableNumber: number) => {
+    if (touchStartTable !== null) {
+      setTouchCurrentTable(tableNumber)
+      setDragOverTableNumber(tableNumber)
+    }
+  }
+
+  const handleTouchEnd = (tableNumber: number) => {
+    if (touchStartTable !== null && touchStartTable !== tableNumber) {
+      const toTable = tables.get(tableNumber)
+      if (toTable && toTable.session.status === 'available') {
+        transferTable(touchStartTable, tableNumber)
+      }
+    }
+    setTouchStartTable(null)
+    setTouchCurrentTable(null)
     setDraggedTableNumber(null)
     setDragOverTableNumber(null)
   }
@@ -109,6 +139,9 @@ export default function Home() {
             onDragEnd={handleDragEnd}
             onDragOver={() => handleDragOver(table.table_number)}
             onDrop={() => handleDrop(table.table_number)}
+            onTouchStart={() => handleTouchStart(table.table_number)}
+            onTouchMove={() => handleTouchMove(table.table_number)}
+            onTouchEnd={() => handleTouchEnd(table.table_number)}
             isDragging={draggedTableNumber === table.table_number}
             isDragOver={dragOverTableNumber === table.table_number}
           />

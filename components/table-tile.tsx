@@ -13,6 +13,9 @@ interface TableTileProps {
   onDragEnd?: () => void
   onDragOver?: (e: React.DragEvent) => void
   onDrop?: () => void
+  onTouchStart?: () => void
+  onTouchMove?: () => void
+  onTouchEnd?: () => void
   isDragging?: boolean
   isDragOver?: boolean
 }
@@ -24,6 +27,9 @@ export function TableTile({
   onDragEnd,
   onDragOver,
   onDrop,
+  onTouchStart,
+  onTouchMove,
+  onTouchEnd,
   isDragging,
   isDragOver
 }: TableTileProps) {
@@ -118,6 +124,22 @@ export function TableTile({
         if (canReceiveDrop() && onDrop) {
           e.preventDefault()
           onDrop()
+        }
+      }}
+      onTouchStart={(e) => {
+        if (canDrag() && onTouchStart) {
+          onTouchStart()
+        }
+      }}
+      onTouchMove={(e) => {
+        if (onTouchMove) {
+          e.preventDefault()
+          onTouchMove()
+        }
+      }}
+      onTouchEnd={(e) => {
+        if (onTouchEnd) {
+          onTouchEnd()
         }
       }}
       onClick={() => canInteract() && onTap()}
