@@ -9,9 +9,24 @@ import { useEffect, useState } from 'react'
 interface TableTileProps {
   table: Table
   onTap: () => void
+  onDragStart?: () => void
+  onDragEnd?: () => void
+  onDragOver?: (e: React.DragEvent) => void
+  onDrop?: () => void
+  isDragging?: boolean
+  isDragOver?: boolean
 }
 
-export function TableTile({ table, onTap }: TableTileProps) {
+export function TableTile({
+  table,
+  onTap,
+  onDragStart,
+  onDragEnd,
+  onDragOver,
+  onDrop,
+  isDragging,
+  isDragOver
+}: TableTileProps) {
   const [timeRemaining, setTimeRemaining] = useState<number>(0)
 
   useEffect(() => {
@@ -53,6 +68,14 @@ export function TableTile({ table, onTap }: TableTileProps) {
     return table.session.status === 'available' || table.session.status === 'alert'
   }
 
+  const canDrag = (): boolean => {
+    return table.session.status === 'active' || table.session.status === 'alert'
+  }
+
+  const canReceiveDrop = (): boolean => {
+    return table.session.status === 'available'
+  }
+
   return (
     <Card
       className={`
@@ -61,8 +84,9 @@ export function TableTile({ table, onTap }: TableTileProps) {
         transition-all
         duration-200
         border-2
-        border-gray-700
+        ${isDragOver ? 'border-blue-500 border-4' : 'border-gray-700'}
         ${canInteract() ? 'hover:scale-105' : 'cursor-default'}
+        ${isDragging ? 'opacity-50' : 'opacity-100'}
         flex
         flex-col
         items-center
@@ -70,6 +94,32 @@ export function TableTile({ table, onTap }: TableTileProps) {
         p-2
         h-[100px]
       `}
+      draggable={canDrag()}
+      onDragStart={(e) => {
+        if (canDrag() && onDragStart) {
+          e.dataTransfer.effectAllowed = 'move'
+          onDragStart()
+        }
+      }}
+      onDragEnd={() => {
+        if (onDragEnd) onDragEnd()
+      }}
+      onDragOver={(e) => {
+        if (canReceiveDrop() && onDragOver) {
+          e.preventDefault()
+          e.dataTransfer.dropEffect = 'move'
+          onDragOver(e)
+        }
+      }}
+      onDragLeave={() => {
+        // Handle via parent component
+      }}
+      onDrop={(e) => {
+        if (canReceiveDrop() && onDrop) {
+          e.preventDefault()
+          onDrop()
+        }
+      }}
       onClick={() => canInteract() && onTap()}
     >
       <div className="text-white text-center space-y-1 w-full">

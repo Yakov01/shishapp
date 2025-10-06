@@ -26,6 +26,7 @@ interface TableState {
   updateTimers: () => void
   setSoundEnabled: (enabled: boolean) => void
   playAlert: () => void
+  transferTable: (fromTableNumber: number, toTableNumber: number) => void
 }
 
 // Helper to initialize 25 tables
@@ -222,6 +223,47 @@ export const useTableStore = create<TableState>((set, get) => ({
       oscillator.stop(audioContext.currentTime + 0.5)
     } catch (error) {
       console.error('Error playing alert sound:', error)
+    }
+  },
+
+  transferTable: (fromTableNumber: number, toTableNumber: number) => {
+    const tables = get().tables
+    const fromTable = tables.get(fromTableNumber)
+    const toTable = tables.get(toTableNumber)
+
+    // Validate: fromTable must have an active session, toTable must be available
+    if (!fromTable || !toTable) return
+    if (fromTable.session.status === 'available') return
+    if (toTable.session.status !== 'available') return
+
+    const newTables = new Map(tables)
+
+    // Transfer session from fromTable to toTable
+    const updatedToTable: Table = {
+      ...toTable,
+      session: {
+        ...fromTable.session
+      }
+    }
+
+    // Reset fromTable to available
+    const updatedFromTable: Table = {
+      ...fromTable,
+      session: {
+        status: 'available',
+        current_change: 0,
+        timer_start_time: null,
+        timer_end_time: null
+      }
+    }
+
+    newTables.set(toTableNumber, updatedToTable)
+    newTables.set(fromTableNumber, updatedFromTable)
+    set({ tables: newTables })
+
+    // Save to localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('shisha-tables', JSON.stringify(Array.from(newTables.values())))
     }
   }
 }))

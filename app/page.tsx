@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useTableStore } from '@/lib/store'
 import { TableTile } from '@/components/table-tile'
 import { Button } from '@/components/ui/button'
@@ -15,8 +15,12 @@ export default function Home() {
     activateTable,
     handleCharcoalChange,
     updateTimers,
-    setSoundEnabled
+    setSoundEnabled,
+    transferTable
   } = useTableStore()
+
+  const [draggedTableNumber, setDraggedTableNumber] = useState<number | null>(null)
+  const [dragOverTableNumber, setDragOverTableNumber] = useState<number | null>(null)
 
   useEffect(() => {
     initTables()
@@ -38,6 +42,27 @@ export default function Home() {
     } else if (table.session.status === 'alert') {
       handleCharcoalChange(tableNumber)
     }
+  }
+
+  const handleDragStart = (tableNumber: number) => {
+    setDraggedTableNumber(tableNumber)
+  }
+
+  const handleDragEnd = () => {
+    setDraggedTableNumber(null)
+    setDragOverTableNumber(null)
+  }
+
+  const handleDragOver = (tableNumber: number) => {
+    setDragOverTableNumber(tableNumber)
+  }
+
+  const handleDrop = (tableNumber: number) => {
+    if (draggedTableNumber !== null && draggedTableNumber !== tableNumber) {
+      transferTable(draggedTableNumber, tableNumber)
+    }
+    setDraggedTableNumber(null)
+    setDragOverTableNumber(null)
   }
 
   if (loading) {
@@ -80,6 +105,12 @@ export default function Home() {
             key={table.id}
             table={table}
             onTap={() => handleTableTap(table.table_number)}
+            onDragStart={() => handleDragStart(table.table_number)}
+            onDragEnd={handleDragEnd}
+            onDragOver={() => handleDragOver(table.table_number)}
+            onDrop={() => handleDrop(table.table_number)}
+            isDragging={draggedTableNumber === table.table_number}
+            isDragOver={dragOverTableNumber === table.table_number}
           />
         ))}
       </div>
