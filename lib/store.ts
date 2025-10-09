@@ -29,7 +29,7 @@ interface TableState {
   resetTable: (tableNumber: number) => void
 }
 
-// Helper to initialize 25 tables
+// Helper to initialize 30 tables
 const initializeDefaultTables = (): Map<number, Table> => {
   const tablesMap = new Map<number, Table>()
 
@@ -49,8 +49,8 @@ const initializeDefaultTables = (): Map<number, Table> => {
     }
   }
 
-  // Create default 25 tables
-  for (let i = 1; i <= 25; i++) {
+  // Create default 30 tables
+  for (let i = 1; i <= 30; i++) {
     tablesMap.set(i, {
       id: i,
       table_number: i,
