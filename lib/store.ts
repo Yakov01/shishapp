@@ -13,6 +13,7 @@ export interface TableSession {
 export interface Table {
   id: number
   table_number: number
+  name?: string
   session: TableSession
 }
 
@@ -29,38 +30,52 @@ interface TableState {
   resetTable: (tableNumber: number) => void
 }
 
-// Helper to initialize 30 tables
-const initializeDefaultTables = (): Map<number, Table> => {
+const BAR_NAMES = ['Bar 1', 'Bar 2', 'Bar 3', 'Bar 4', 'Bar 5', 'Bar 6']
+
+const buildDefaultTables = (): Map<number, Table> => {
   const tablesMap = new Map<number, Table>()
 
-  // Load from localStorage if available
-  if (typeof window !== 'undefined') {
-    const stored = localStorage.getItem('shisha-tables')
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored)
-        parsed.forEach((table: Table) => {
-          tablesMap.set(table.table_number, table)
-        })
-        return tablesMap
-      } catch (e) {
-        console.error('Error parsing stored tables:', e)
-      }
-    }
-  }
-
-  // Create default 30 tables
   for (let i = 1; i <= 30; i++) {
     tablesMap.set(i, {
       id: i,
       table_number: i,
-      session: {
-        status: 'available',
-        current_change: 0,
-        timer_start_time: null,
-        timer_end_time: null
-      }
+      session: { status: 'available', current_change: 0, timer_start_time: null, timer_end_time: null }
     })
+  }
+
+  BAR_NAMES.forEach((name, index) => {
+    const id = 31 + index
+    tablesMap.set(id, {
+      id,
+      table_number: id,
+      name,
+      session: { status: 'available', current_change: 0, timer_start_time: null, timer_end_time: null }
+    })
+  })
+
+  return tablesMap
+}
+
+const initializeDefaultTables = (): Map<number, Table> => {
+  const tablesMap = buildDefaultTables()
+
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem('shisha-tables')
+    if (stored) {
+      try {
+        const parsed: Table[] = JSON.parse(stored)
+        parsed.forEach((table) => {
+          // Restore session state but keep name from defaults
+          const existing = tablesMap.get(table.table_number)
+          tablesMap.set(table.table_number, {
+            ...table,
+            name: existing?.name
+          })
+        })
+      } catch (e) {
+        console.error('Error parsing stored tables:', e)
+      }
+    }
   }
 
   return tablesMap
@@ -82,7 +97,7 @@ export const useTableStore = create<TableState>((set, get) => ({
     if (!table || table.session.status !== 'available') return
 
     const now = new Date()
-    const endTime = new Date(now.getTime() + 30 * 60 * 1000) // 30 minutes
+    const endTime = new Date(now.getTime() + 25 * 60 * 1000) // 25 minutes
 
     const updatedTable: Table = {
       ...table,
@@ -134,7 +149,7 @@ export const useTableStore = create<TableState>((set, get) => ({
       }
     } else {
       // Start new timer for next change
-      const endTime = new Date(now.getTime() + 30 * 60 * 1000)
+      const endTime = new Date(now.getTime() + 25 * 60 * 1000)
 
       const updatedTable: Table = {
         ...table,

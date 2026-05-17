@@ -57,6 +57,9 @@ export default function Home() {
     (a, b) => a.table_number - b.table_number
   )
 
+  const regularTables = tableArray.filter(t => !t.name)
+  const barTables = tableArray.filter(t => t.name)
+
   return (
     <div className="min-h-screen bg-gray-900 p-2 md:p-4">
       {/* Header */}
@@ -78,9 +81,9 @@ export default function Home() {
         </Button>
       </header>
 
-      {/* Table Grid */}
+      {/* Regular Tables Grid */}
       <div className="grid grid-cols-5 gap-2 max-w-6xl mx-auto">
-        {tableArray.map((table) => (
+        {regularTables.map((table) => (
           <TableTile
             key={table.id}
             table={table}
@@ -88,6 +91,21 @@ export default function Home() {
             onDoubleTap={() => handleTableDoubleTap(table.table_number)}
           />
         ))}
+      </div>
+
+      {/* Bar Tables Section */}
+      <div className="mt-4 max-w-6xl mx-auto">
+        <h2 className="text-white text-lg font-semibold mb-2">Bar</h2>
+        <div className="grid grid-cols-6 gap-2">
+          {barTables.map((table) => (
+            <TableTile
+              key={table.id}
+              table={table}
+              onTap={() => handleTableTap(table.table_number)}
+              onDoubleTap={() => handleTableDoubleTap(table.table_number)}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Legend */}

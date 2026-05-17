@@ -101,7 +101,7 @@ export function TableTile({
       <div className="text-white text-center space-y-1 w-full">
         {/* Table Number */}
         <div className="text-lg font-bold">
-          T{table.table_number}
+          {table.name ?? `T${table.table_number}`}
         </div>
 
         {/* Timer Display */}
