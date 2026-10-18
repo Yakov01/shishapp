@@ -121,7 +121,7 @@ export function TableTile({
         {/* Session Counter */}
         {table.session.current_change > 0 && table.session.status !== 'available' && (
           <Badge variant="secondary" className="text-xs">
-            {table.session.current_change}/2
+            {table.session.current_change}/4
           </Badge>
         )}
 

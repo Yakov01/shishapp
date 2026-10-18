@@ -127,8 +127,8 @@ export const useTableStore = create<TableState>((set, get) => ({
     const now = new Date()
     const currentChange = table.session.current_change
 
-    if (currentChange >= 2) {
-      // Reset to available after 2nd change
+    if (currentChange >= 4) {
+      // Reset to available after 4th change
       const updatedTable: Table = {
         ...table,
         session: {
